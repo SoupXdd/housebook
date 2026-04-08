@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReadingStatus {
+  unread
+  reading
+  read
+}
+
+enum LoanStatus {
+  active
+  returned
+}
+
+enum LoanRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  name          String
+  avatarUrl     String?
+  bio           String?
+  passwordHash  String?
+  hashedRt      String?
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  savedBooks    UserBook[]
+  outgoingLoans Loan[]   @relation("OwnerLoans")
+  incomingLoans Loan[]   @relation("BorrowerLoans")
+  incomingLoanRequests LoanRequest[] @relation("LoanRequestOwner")
+  outgoingLoanRequests LoanRequest[] @relation("LoanRequestRequester")
+}
+
+model Book {
+  id           Int      @id @default(autoincrement())
+  canonicalKey String   @unique
+  title        String
+  authors      String[]
+  coverUrl     String?
+  description  String?
+  isbn         String?
+  language     String?
+  year         Int?
+  sourceName   String
+  sourceUrl    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  savedBy      UserBook[]
+  loans        Loan[]
+  loanRequests LoanRequest[]
+
+  @@index([isbn])
+  @@index([sourceName])
+}
+
+model UserBook {
+  userId        Int
+  bookId        Int
+  readingStatus ReadingStatus @default(unread)
+  createdAt     DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+  @@index([bookId])
+}
+
+model Loan {
+  id             Int        @id @default(autoincrement())
+  ownerUserId    Int
+  borrowerUserId Int?
+  bookId         Int
+  borrowerName   String
+  lentAt         DateTime   @default(now())
+  dueAt          DateTime?
+  returnedAt     DateTime?
+  status         LoanStatus @default(active)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  ownerUser    User  @relation("OwnerLoans", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  borrowerUser User? @relation("BorrowerLoans", fields: [borrowerUserId], references: [id], onDelete: SetNull)
+  book         Book  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, status])
+  @@index([borrowerUserId, status])
+  @@index([bookId, status])
+}
+
+model LoanRequest {
+  id              Int               @id @default(autoincrement())
+  ownerUserId     Int
+  requesterUserId Int
+  bookId          Int
+  message         String?
+  status          LoanRequestStatus @default(pending)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  ownerUser     User @relation("LoanRequestOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  requesterUser User @relation("LoanRequestRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  book          Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, status])
+  @@index([requesterUserId, status])
+  @@index([bookId, status])
+}

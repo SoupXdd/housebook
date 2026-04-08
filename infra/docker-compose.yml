@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: housebook-postgres
+    environment:
+      POSTGRES_DB: housebook
+      POSTGRES_USER: housebook
+      POSTGRES_PASSWORD: housebook
+    ports:
+      - "5432:5432"
+    volumes:
+      - housebook_pgdata:/var/lib/postgresql/data
+
+volumes:
+  housebook_pgdata:
