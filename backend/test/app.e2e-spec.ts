@@ -86,12 +86,14 @@ describe('Housebook API (e2e)', () => {
   let createdBookId = 0;
   let createdRequestBookId = 0;
   let createdEmptyUserId = 0;
+  let createdFreshRegisteredUserId = 0;
   let createdUpcomingBookId = 0;
   let createdNoDueBookId = 0;
 
   const suffix = `e2e-${Date.now()}`;
   const initialEmail = `reader-${suffix}@housebook.local`;
   const emptyEmail = `empty-${suffix}@housebook.local`;
+  const freshRegisteredEmail = `fresh-${suffix}@housebook.local`;
   const password = 'password123';
 
   beforeAll(async () => {
@@ -257,7 +259,12 @@ describe('Housebook API (e2e)', () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: [initialEmail, emptyEmail, `updated-${suffix}@housebook.local`],
+          in: [
+            initialEmail,
+            emptyEmail,
+            freshRegisteredEmail,
+            `updated-${suffix}@housebook.local`,
+          ],
         },
       },
     });
@@ -273,6 +280,91 @@ describe('Housebook API (e2e)', () => {
         const body = getBody<HealthBody>(response);
         expect(body.status).toBe('ok');
         expect(body.database).toBe('connected');
+      });
+  });
+
+  it('/auth/register (POST) creates a truly empty new user', async () => {
+    const registerResponse = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        name: 'Fresh Reader',
+        email: freshRegisteredEmail,
+        password,
+      })
+      .expect(201);
+
+    const registerBody = getBody<AuthSuccessBody>(registerResponse);
+    createdFreshRegisteredUserId = registerBody.user.id;
+
+    expect(registerResponse.body.user).toEqual(
+      expect.objectContaining({
+        id: createdFreshRegisteredUserId,
+        email: freshRegisteredEmail,
+        name: 'Fresh Reader',
+        avatarUrl: null,
+        bio: null,
+        role: 'USER',
+      }),
+    );
+
+    await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: createdFreshRegisteredUserId,
+            email: freshRegisteredEmail,
+            name: 'Fresh Reader',
+            avatarUrl: null,
+            bio: null,
+            role: 'USER',
+          }),
+        );
+      });
+
+    await request(app.getHttpServer())
+      .get('/books/library')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect([]);
+
+    await request(app.getHttpServer())
+      .get('/loans/outgoing')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect([]);
+
+    await request(app.getHttpServer())
+      .get('/loans/incoming')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect([]);
+
+    await request(app.getHttpServer())
+      .get('/loan-requests/incoming')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect([]);
+
+    await request(app.getHttpServer())
+      .get('/loan-requests/outgoing')
+      .set('Authorization', `Bearer ${registerBody.accessToken}`)
+      .expect(200)
+      .expect([]);
+
+    await request(app.getHttpServer())
+      .get('/users/community')
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).not.toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: createdFreshRegisteredUserId,
+            }),
+          ]),
+        );
       });
   });
 

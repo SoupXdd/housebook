@@ -1,22 +1,22 @@
 {
-  "name": "housebook",
+  "name": "housebook-backend",
   "private": true,
   "workspaces": [
-    "apps/backend"
+    "backend"
   ],
   "scripts": {
     "postinstall": "npm run prisma:generate",
-    "dev": "npm --workspace apps/backend run start:dev",
-    "dev:backend": "npm --workspace apps/backend run start:dev",
-    "dev:frontend": "npm --prefix frontend-bookinventoryapp run dev",
-    "build:frontend": "npm --prefix frontend-bookinventoryapp run build",
-    "setup:frontend": "npm --prefix frontend-bookinventoryapp install",
+    "dev": "npm run dev:backend",
+    "dev:backend": "npm --workspace backend run start:dev",
     "db:up": "bash scripts/db-up.sh",
     "db:down": "bash scripts/db-down.sh",
-    "prisma:generate": "npm --workspace apps/backend run prisma:generate",
-    "prisma:push": "npx prisma db push --config apps/backend/prisma.config.ts",
-    "prisma:migrate": "npm --workspace apps/backend run prisma:migrate",
-    "prisma:seed": "npm --workspace apps/backend run prisma:seed",
-    "setup:test-data": "npm run db:up && npm run prisma:push && npm run prisma:seed"
+    "prisma:generate": "npm --workspace backend run prisma:generate",
+    "prisma:push": "npx prisma db push --config backend/prisma.config.ts",
+    "prisma:migrate": "npm --workspace backend run prisma:migrate",
+    "prisma:seed": "npm --workspace backend run prisma:seed",
+    "setup:test-data": "npm run db:up && npm run prisma:push && npm run prisma:seed",
+    "build:backend": "npm --workspace backend run build",
+    "lint:backend": "npm --workspace backend run lint",
+    "test:e2e": "npm --workspace backend run test:e2e"
   }
 }

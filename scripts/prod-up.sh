@@ -31,10 +31,9 @@ sleep 5
 echo "Applying schema and seeding demo data..."
 "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml run --rm backend sh -lc "npx prisma db push --config prisma.config.ts && npm run prisma:seed"
 
-echo "Starting backend and frontend..."
-"${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up -d backend frontend
+echo "Starting backend..."
+"${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up -d backend
 
 echo "Production environment is ready!"
-echo "Frontend: http://localhost:${FRONTEND_PORT:-80}"
 echo "Backend: http://localhost:${BACKEND_PORT:-3000}"
-echo "API Docs: http://localhost:${FRONTEND_PORT:-80}/api-docs"
+echo "API Docs: http://localhost:${BACKEND_PORT:-3000}/api-docs"
