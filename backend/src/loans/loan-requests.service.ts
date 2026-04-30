@@ -176,12 +176,33 @@ export class LoanRequestsService {
     }
 
     const updatedRequest = await this.prisma.$transaction(async (tx) => {
+      const requesterAlreadyHadBook = await tx.userBook.findUnique({
+        where: {
+          userId_bookId: {
+            userId: request.requesterUserId,
+            bookId: request.book.id,
+          },
+        },
+      });
+
+      if (!requesterAlreadyHadBook) {
+        await tx.userBook.create({
+          data: {
+            userId: request.requesterUserId,
+            bookId: request.book.id,
+            readingStatus: 'unread',
+          },
+        });
+      }
+
       const createdLoan = await tx.loan.create({
         data: {
           ownerUserId,
           borrowerUserId: request.requesterUserId,
           borrowerName: request.requesterUser.name,
           bookId: request.book.id,
+          loanRequestId: request.id,
+          borrowerLibraryAdded: !requesterAlreadyHadBook,
           dueAt,
         },
       });
@@ -359,9 +380,14 @@ export class LoanRequestsService {
       request.status === LoanRequestStatus.approved
         ? await this.prisma.loan.findFirst({
             where: {
-              ownerUserId: request.ownerUserId,
-              borrowerUserId: request.requesterUserId,
-              bookId: request.book.id,
+              OR: [
+                { loanRequestId: request.id },
+                {
+                  ownerUserId: request.ownerUserId,
+                  borrowerUserId: request.requesterUserId,
+                  bookId: request.book.id,
+                },
+              ],
             },
             orderBy: { createdAt: 'desc' },
           })

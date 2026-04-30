@@ -55,6 +55,9 @@ model Book {
   description  String?
   isbn         String?
   language     String?
+  pagesCount   Int?
+  genre        String?
+  storeLinks   Json?
   year         Int?
   sourceName   String
   sourceUrl    String
@@ -86,6 +89,8 @@ model Loan {
   ownerUserId    Int
   borrowerUserId Int?
   bookId         Int
+  loanRequestId  Int?
+  borrowerLibraryAdded Boolean @default(false)
   borrowerName   String
   lentAt         DateTime   @default(now())
   dueAt          DateTime?
@@ -101,6 +106,7 @@ model Loan {
   @@index([ownerUserId, status])
   @@index([borrowerUserId, status])
   @@index([bookId, status])
+  @@index([loanRequestId])
 }
 
 model LoanRequest {

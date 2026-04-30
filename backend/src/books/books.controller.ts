@@ -24,6 +24,7 @@ import type { BookLookupResult, LibraryBookResult } from './types';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { GetCurrentUserId } from '../auth/decorators/current-user.decorator';
 import { LookupBookDto } from './dto/lookup-book.dto';
+import { CreateManualBookDto } from './dto/create-manual-book.dto';
 import { UpdateReadingStatusDto } from './dto/update-reading-status.dto';
 
 @ApiTags('books')
@@ -71,6 +72,21 @@ export class BooksController {
       isbn: dto.isbn?.trim(),
       url: dto.url?.trim(),
     });
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('library/manual')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a form-filled book and save it to the current user library' })
+  @ApiBody({ type: CreateManualBookDto })
+  @ApiResponse({ status: 201, description: 'Manual book saved to library' })
+  @ApiResponse({ status: 400, description: 'Invalid input parameters' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async saveManualToLibrary(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: CreateManualBookDto,
+  ): Promise<LibraryBookResult> {
+    return this.booksService.saveManualToLibrary(userId, dto);
   }
 
   @UseGuards(AccessTokenGuard)

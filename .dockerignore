@@ -1,0 +1,8 @@
+.git
+node_modules
+frontend-bookinventoryapp/.git
+frontend-bookinventoryapp/node_modules
+frontend-bookinventoryapp/dist
+apps/backend/dist
+coverage
+npm-debug.log*

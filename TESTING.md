@@ -95,7 +95,7 @@ Current expectation:
 ### 4. My Library
 
 - Call `GET /books/library`
-- Confirm seeded books are listed
+- Confirm seeded books are listed, including `1984`, `Учение Дона Хуана`, and `Бойцовский клуб`
 - Confirm additive fields exist when relevant:
   - `displayStatus`
   - `displayAuthor`
@@ -112,7 +112,7 @@ Current expectation:
 
 ### 6. Add Book
 
-- Call `GET /books/lookup?isbn=9780140328721`
+- Call `GET /books/lookup?isbn=9780451524935`
 - Confirm book data is returned
 - Call `POST /books/library` with the same ISBN
 - Confirm the book is saved into the authenticated user's library

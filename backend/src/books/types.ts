@@ -13,12 +13,19 @@ export type BookLookupResult = {
   pageSize?: string;
   printRun?: number;
   year?: number;
+  genre?: string;
   rating?: number;
   ratingsCount?: number;
   language?: string;
   subjects?: string[];
+  storeLinks?: StoreLinkResult[];
   sourceUrl: string;
   sourceName: BookSourceName;
+};
+
+export type StoreLinkResult = {
+  name: string;
+  url: string;
 };
 
 export type ReadingStatus = 'unread' | 'reading' | 'read';
@@ -55,7 +62,7 @@ export type LibraryBookResult = BookLookupResult & {
   wasAlreadyInLibrary?: boolean;
 };
 
-export type BookSourceName = 'OpenLibrary' | 'LitRes';
+export type BookSourceName = 'OpenLibrary' | 'LitRes' | 'Manual';
 
 export interface BookProvider {
   readonly name: BookSourceName;

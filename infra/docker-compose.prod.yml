@@ -34,6 +34,7 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh}
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-30d}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-3000}:3000"
     depends_on:

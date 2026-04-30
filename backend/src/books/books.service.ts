@@ -5,17 +5,19 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { LoanStatus as PrismaLoanStatus } from '@prisma/client/index';
+import { LoanStatus as PrismaLoanStatus, Prisma } from '@prisma/client/index';
 import type {
   BookLookupResult,
   BookProvider,
   LibraryBookResult,
   ReadingStatus,
+  StoreLinkResult,
 } from './types';
 import { OpenLibraryProvider } from './providers/openlibrary.provider';
 import { LitResProvider } from './providers/litres.provider';
 import { PrismaService } from '../prisma/prisma.service';
 import { deriveLoanUxState, getReadingStatusLabel } from '../loans/loan-ux';
+import type { CreateManualBookDto } from './dto/create-manual-book.dto';
 
 export type LookupInput = { isbn?: string; url?: string; title?: string };
 
@@ -101,6 +103,11 @@ export class BooksService {
         description: result.description,
         isbn: result.isbn,
         language: result.language,
+        pagesCount: result.pagesCount,
+        genre: result.genre,
+        storeLinks:
+          this.normalizeStoreLinksForStorage(result.storeLinks) ??
+          Prisma.JsonNull,
         year: result.year,
         sourceName: result.sourceName,
         sourceUrl: result.sourceUrl,
@@ -113,6 +120,11 @@ export class BooksService {
         description: result.description,
         isbn: result.isbn,
         language: result.language,
+        pagesCount: result.pagesCount,
+        genre: result.genre,
+        storeLinks:
+          this.normalizeStoreLinksForStorage(result.storeLinks) ??
+          Prisma.JsonNull,
         year: result.year,
         sourceName: result.sourceName,
         sourceUrl: result.sourceUrl,
@@ -139,6 +151,110 @@ export class BooksService {
         `Book ${book.id} already exists in user ${userId} library`,
       );
     }
+
+    return this.buildLibraryBookResult({
+      book,
+      readingStatus: userBook.readingStatus,
+      addedAt: userBook.createdAt,
+      activeLoan: undefined,
+      wasAlreadyInLibrary: Boolean(existingUserBook),
+    });
+  }
+
+  async saveManualToLibrary(
+    userId: number,
+    input: CreateManualBookDto,
+  ): Promise<LibraryBookResult> {
+    const title = input.title.trim();
+    const authors = this.normalizeManualAuthors(input);
+
+    if (!title) {
+      throw new BadRequestException('Title cannot be empty');
+    }
+
+    if (authors.length === 0) {
+      throw new BadRequestException('Provide author or authors');
+    }
+
+    const isbn = input.isbn?.trim() || undefined;
+    const sourceUrl = this.resolveManualSourceUrl(input.storeLinks);
+    const canonicalKey = this.buildCanonicalKey({
+      title,
+      authors,
+      isbn,
+      sourceName: 'Manual',
+      sourceUrl: '',
+    });
+
+    const existingBook = await this.prisma.book.findUnique({
+      where: { canonicalKey },
+      select: { id: true },
+    });
+    const existingUserBook = existingBook
+      ? await this.prisma.userBook.findUnique({
+          where: {
+            userId_bookId: {
+              userId,
+              bookId: existingBook.id,
+            },
+          },
+        })
+      : null;
+
+    const book = await this.prisma.book.upsert({
+      where: { canonicalKey },
+      update: {
+        title,
+        authors,
+        coverUrl: input.coverUrl?.trim() || null,
+        description: input.description?.trim() || null,
+        isbn,
+        language: input.language?.trim() || null,
+        pagesCount: input.pagesCount ?? null,
+        genre: input.genre?.trim() || null,
+        storeLinks:
+          this.normalizeStoreLinksForStorage(input.storeLinks) ??
+          Prisma.JsonNull,
+        year: input.year ?? null,
+        sourceName: 'Manual',
+        sourceUrl,
+      },
+      create: {
+        canonicalKey,
+        title,
+        authors,
+        coverUrl: input.coverUrl?.trim() || null,
+        description: input.description?.trim() || null,
+        isbn,
+        language: input.language?.trim() || null,
+        pagesCount: input.pagesCount ?? null,
+        genre: input.genre?.trim() || null,
+        storeLinks:
+          this.normalizeStoreLinksForStorage(input.storeLinks) ??
+          Prisma.JsonNull,
+        year: input.year ?? null,
+        sourceName: 'Manual',
+        sourceUrl,
+      },
+    });
+
+    const readingStatus = input.readingStatus ?? 'unread';
+    const userBook = await this.prisma.userBook.upsert({
+      where: {
+        userId_bookId: {
+          userId,
+          bookId: book.id,
+        },
+      },
+      update: {
+        readingStatus,
+      },
+      create: {
+        userId,
+        bookId: book.id,
+        readingStatus,
+      },
+    });
 
     return this.buildLibraryBookResult({
       book,
@@ -325,7 +441,7 @@ export class BooksService {
     }
 
     const sourceUrl = result.sourceUrl.trim().toLowerCase();
-    if (sourceUrl) {
+    if (sourceUrl && result.sourceName !== 'Manual') {
       return `url:${result.sourceName.toLowerCase()}:${sourceUrl}`;
     }
 
@@ -339,11 +455,73 @@ export class BooksService {
   }
 
   private toSourceName(value: string): BookLookupResult['sourceName'] {
-    if (value === 'OpenLibrary' || value === 'LitRes') {
+    if (value === 'OpenLibrary' || value === 'LitRes' || value === 'Manual') {
       return value;
     }
 
     return 'OpenLibrary';
+  }
+
+  private normalizeManualAuthors(input: CreateManualBookDto): string[] {
+    const authors = input.authors?.length
+      ? input.authors
+      : input.author
+        ? input.author.split(',')
+        : [];
+
+    return authors.map((author) => author.trim()).filter(Boolean);
+  }
+
+  private resolveManualSourceUrl(storeLinks?: StoreLinkResult[]): string {
+    const firstLink = storeLinks?.find((link) => link.url?.trim());
+    return firstLink?.url.trim() || 'manual';
+  }
+
+  private normalizeStoreLinksForStorage(
+    storeLinks?: StoreLinkResult[],
+  ): StoreLinkResult[] | undefined {
+    const normalized = storeLinks
+      ?.map((link) => ({
+        name: link.name.trim(),
+        url: link.url.trim(),
+      }))
+      .filter((link) => link.name && link.url);
+
+    return normalized?.length ? normalized : undefined;
+  }
+
+  private normalizeStoreLinksFromStorage(value: unknown): StoreLinkResult[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+
+        const candidate = item as { name?: unknown; url?: unknown };
+        if (typeof candidate.name !== 'string' || typeof candidate.url !== 'string') {
+          return null;
+        }
+
+        const name = candidate.name.trim();
+        const url = candidate.url.trim();
+        return name && url ? { name, url } : null;
+      })
+      .filter((item): item is StoreLinkResult => Boolean(item));
+  }
+
+  private hasExternalSourceLink(book: {
+    sourceUrl: string;
+    storeLinks?: unknown;
+  }): boolean {
+    if (/^https?:\/\//i.test(book.sourceUrl)) {
+      return true;
+    }
+
+    return this.normalizeStoreLinksFromStorage(book.storeLinks).length > 0;
   }
 
   private toReadingStatus(value: string): ReadingStatus {
@@ -408,6 +586,9 @@ export class BooksService {
       description: string | null;
       isbn: string | null;
       language: string | null;
+      pagesCount?: number | null;
+      genre?: string | null;
+      storeLinks?: unknown;
       year: number | null;
       sourceName: string;
       sourceUrl: string;
@@ -445,15 +626,19 @@ export class BooksService {
       coverUrl: input.book.coverUrl ?? undefined,
       description: input.book.description ?? undefined,
       isbn: input.book.isbn ?? undefined,
+      pagesCount: input.book.pagesCount ?? undefined,
       year: input.book.year ?? undefined,
+      genre: input.book.genre ?? undefined,
       language: input.book.language ?? undefined,
+      subjects: input.book.genre ? [input.book.genre] : undefined,
+      storeLinks: this.normalizeStoreLinksFromStorage(input.book.storeLinks),
       sourceName: this.toSourceName(input.book.sourceName),
       sourceUrl: input.book.sourceUrl,
       addedAt: input.addedAt?.toISOString(),
       activeLoan,
       isLent: activeLoan?.status === 'active',
       isAvailable: !activeLoan || activeLoan.status !== 'active',
-      hasSourceLink: Boolean(input.book.sourceUrl),
+      hasSourceLink: this.hasExternalSourceLink(input.book),
       displayAuthor: authors.join(', '),
       displayStatus: getReadingStatusLabel(normalizedReadingStatus),
       wasAlreadyInLibrary: input.wasAlreadyInLibrary,

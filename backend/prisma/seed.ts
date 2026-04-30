@@ -31,6 +31,9 @@ type SeedBook = {
   description?: string;
   isbn?: string;
   language?: string;
+  pagesCount?: number;
+  genre?: string;
+  storeLinks?: { name: string; url: string }[];
   year?: number;
   sourceName: string;
   sourceUrl: string;
@@ -91,115 +94,240 @@ const users: SeedUser[] = [
 
 const books: SeedBook[] = [
   {
-    canonicalKey: 'isbn:9780140328721',
-    title: 'Fantastic Mr. Fox',
-    authors: ['Roald Dahl'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/15152634-L.jpg',
-    description: 'A classic Roald Dahl tale about a clever fox outwitting three farmers.',
-    isbn: '9780140328721',
-    language: 'English',
-    year: 1988,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9780140328721',
+    canonicalKey: 'seed:teachings-of-don-juan',
+    title: 'Учение Дона Хуана',
+    authors: ['Карлос Кастанеда'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780671600419-L.jpg',
+    description: 'Пограничная смесь антропологии, мистики и психоделического дневника ученика, который пытается понять мир дона Хуана.',
+    isbn: '9780671600419',
+    language: 'Russian',
+    pagesCount: 320,
+    genre: 'Мистика / антропология',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%A3%D1%87%D0%B5%D0%BD%D0%B8%D0%B5%20%D0%94%D0%BE%D0%BD%D0%B0%20%D0%A5%D1%83%D0%B0%D0%BD%D0%B0' },
+      { name: 'Лабиринт', url: 'https://www.labirint.ru/search/%D0%A3%D1%87%D0%B5%D0%BD%D0%B8%D0%B5%20%D0%94%D0%BE%D0%BD%D0%B0%20%D0%A5%D1%83%D0%B0%D0%BD%D0%B0/' },
+    ],
+    year: 1968,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780671600419',
   },
   {
-    canonicalKey: 'isbn:9785171183667',
-    title: 'Дюна',
-    authors: ['Фрэнк Герберт'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/12632416-L.jpg',
-    description: 'Эпическая научная фантастика о планете Арракис, власти и пророчестве.',
-    isbn: '9785171183667',
+    canonicalKey: 'seed:1984',
+    title: '1984',
+    authors: ['Джордж Оруэлл'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780451524935-L.jpg',
+    description: 'Холодная антиутопия о наблюдении, языке, страхе и системе, которая хочет владеть не только поступками, но и памятью.',
+    isbn: '9780451524935',
     language: 'Russian',
-    year: 2022,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9785171183667',
+    pagesCount: 328,
+    genre: 'Антиутопия',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=1984%20%D0%94%D0%B6%D0%BE%D1%80%D0%B4%D0%B6%20%D0%9E%D1%80%D1%83%D1%8D%D0%BB%D0%BB' },
+      { name: 'Читай-город', url: 'https://www.chitai-gorod.ru/search?phrase=1984%20%D0%9E%D1%80%D1%83%D1%8D%D0%BB%D0%BB' },
+    ],
+    year: 1949,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780451524935',
   },
   {
-    canonicalKey: 'isbn:9785041567225',
-    title: 'Мастер и Маргарита',
-    authors: ['Михаил Булгаков'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/14610359-L.jpg',
-    description: 'Роман о любви, свободе и визите Воланда в Москву.',
-    isbn: '9785041567225',
+    canonicalKey: 'seed:fahrenheit-451',
+    title: '451 градус по Фаренгейту',
+    authors: ['Рэй Брэдбери'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9781451673319-L.jpg',
+    description: 'Короткий и злой роман о мире, где книги сжигают, а людей приучают не думать слишком глубоко.',
+    isbn: '9781451673319',
     language: 'Russian',
-    year: 2023,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9785041567225',
+    pagesCount: 256,
+    genre: 'Антиутопия',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=451%20%D0%B3%D1%80%D0%B0%D0%B4%D1%83%D1%81%20%D0%BF%D0%BE%20%D0%A4%D0%B0%D1%80%D0%B5%D0%BD%D0%B3%D0%B5%D0%B9%D1%82%D1%83' },
+      { name: 'Лабиринт', url: 'https://www.labirint.ru/search/451%20%D0%B3%D1%80%D0%B0%D0%B4%D1%83%D1%81%20%D0%BF%D0%BE%20%D0%A4%D0%B0%D1%80%D0%B5%D0%BD%D0%B3%D0%B5%D0%B9%D1%82%D1%83/' },
+    ],
+    year: 1953,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9781451673319',
   },
   {
-    canonicalKey: 'isbn:9785906837643',
-    title: 'Sapiens: Краткая история человечества',
-    authors: ['Юваль Ной Харари'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/10521291-L.jpg',
-    description: 'Популярный нон-фикшн о развитии Homo sapiens и цивилизации.',
-    isbn: '9785906837643',
+    canonicalKey: 'seed:fight-club',
+    title: 'Бойцовский клуб',
+    authors: ['Чак Паланик'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780393327342-L.jpg',
+    description: 'Грязный, нервный и очень смешной роман о бессоннице, потреблении, мужской злости и клубе, о котором не говорят.',
+    isbn: '9780393327342',
     language: 'Russian',
-    year: 2019,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9785906837643',
+    pagesCount: 224,
+    genre: 'Контркультура',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%91%D0%BE%D0%B9%D1%86%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BA%D0%BB%D1%83%D0%B1%20%D0%A7%D0%B0%D0%BA%20%D0%9F%D0%B0%D0%BB%D0%B0%D0%BD%D0%B8%D0%BA' },
+      { name: 'Читай-город', url: 'https://www.chitai-gorod.ru/search?phrase=%D0%91%D0%BE%D0%B9%D1%86%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BA%D0%BB%D1%83%D0%B1%20%D0%9F%D0%B0%D0%BB%D0%B0%D0%BD%D0%B8%D0%BA' },
+    ],
+    year: 1996,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780393327342',
   },
   {
-    canonicalKey: 'isbn:9785389074351',
-    title: 'Гарри Поттер и философский камень',
-    authors: ['Дж. К. Роулинг'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/10523338-L.jpg',
-    description: 'Первая книга о мальчике-волшебнике и школе Хогвартс.',
-    isbn: '9785389074351',
+    canonicalKey: 'seed:lullaby',
+    title: 'Колыбельная',
+    authors: ['Чак Паланик'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780385722193-L.jpg',
+    description: 'Черная сказка Паланика о смертельной песенке, медийном шуме и людях, которые слишком легко ломают чужую жизнь.',
+    isbn: '9780385722193',
     language: 'Russian',
-    year: 2021,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9785389074351',
+    pagesCount: 272,
+    genre: 'Черная сатира',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%9A%D0%BE%D0%BB%D1%8B%D0%B1%D0%B5%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F%20%D0%A7%D0%B0%D0%BA%20%D0%9F%D0%B0%D0%BB%D0%B0%D0%BD%D0%B8%D0%BA' },
+    ],
+    year: 2002,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780385722193',
   },
   {
-    canonicalKey: 'isbn:9785389205502',
-    title: 'Атлант расправил плечи',
-    authors: ['Айн Рэнд'],
-    coverUrl: 'https://covers.openlibrary.org/b/id/12654637-L.jpg',
-    description: 'Роман о свободе, ответственности и цене таланта.',
-    isbn: '9785389205502',
+    canonicalKey: 'seed:invisible-monsters',
+    title: 'Невидимки',
+    authors: ['Чак Паланик'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780393319293-L.jpg',
+    description: 'Токсичная глянцевая одиссея про красоту, саморазрушение, идентичность и желание исчезнуть из собственной жизни.',
+    isbn: '9780393319293',
     language: 'Russian',
-    year: 2022,
-    sourceName: 'OpenLibrary',
-    sourceUrl: 'https://openlibrary.org/isbn/9785389205502',
+    pagesCount: 304,
+    genre: 'Трансгрессивная проза',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%9D%D0%B5%D0%B2%D0%B8%D0%B4%D0%B8%D0%BC%D0%BA%D0%B8%20%D0%A7%D0%B0%D0%BA%20%D0%9F%D0%B0%D0%BB%D0%B0%D0%BD%D0%B8%D0%BA' },
+    ],
+    year: 1999,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780393319293',
+  },
+  {
+    canonicalKey: 'seed:generation-p',
+    title: 'Generation "П"',
+    authors: ['Виктор Пелевин'],
+    description: 'Постсоветский рекламный шаманизм: клипы, бренды, пустота, телевизор и странное ощущение, что реальность написали копирайтеры.',
+    language: 'Russian',
+    pagesCount: 352,
+    genre: 'Постмодерн',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=Generation%20%D0%9F%20%D0%9F%D0%B5%D0%BB%D0%B5%D0%B2%D0%B8%D0%BD' },
+      { name: 'Лабиринт', url: 'https://www.labirint.ru/search/Generation%20%D0%9F/' },
+    ],
+    year: 1999,
+    sourceName: 'Seed',
+    sourceUrl: 'https://ru.wikipedia.org/wiki/Generation_%C2%AB%D0%9F%C2%BB',
+  },
+  {
+    canonicalKey: 'seed:roadside-picnic',
+    title: 'Пикник на обочине',
+    authors: ['Аркадий Стругацкий', 'Борис Стругацкий'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9781613743416-L.jpg',
+    description: 'Сталкерская классика о Зоне, артефактах, человеческой жадности и желании попросить у мира невозможного.',
+    isbn: '9781613743416',
+    language: 'Russian',
+    pagesCount: 256,
+    genre: 'Фантастика',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%9F%D0%B8%D0%BA%D0%BD%D0%B8%D0%BA%20%D0%BD%D0%B0%20%D0%BE%D0%B1%D0%BE%D1%87%D0%B8%D0%BD%D0%B5' },
+    ],
+    year: 1972,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9781613743416',
+  },
+  {
+    canonicalKey: 'seed:clockwork-orange',
+    title: 'Заводной апельсин',
+    authors: ['Энтони Берджесс'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780393312836-L.jpg',
+    description: 'Насилие, свобода воли, государственное перевоспитание и язык, который звучит как удар ботинком по стеклу.',
+    isbn: '9780393312836',
+    language: 'Russian',
+    pagesCount: 240,
+    genre: 'Антиутопия',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%97%D0%B0%D0%B2%D0%BE%D0%B4%D0%BD%D0%BE%D0%B9%20%D0%B0%D0%BF%D0%B5%D0%BB%D1%8C%D1%81%D0%B8%D0%BD' },
+    ],
+    year: 1962,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780393312836',
+  },
+  {
+    canonicalKey: 'seed:catcher-in-the-rye',
+    title: 'Над пропастью во ржи',
+    authors: ['Джером Д. Сэлинджер'],
+    coverUrl: 'https://covers.openlibrary.org/isbn/9780316769488-L.jpg',
+    description: 'Нервный подростковый монолог о фальши взрослых, одиночестве и попытке удержаться на краю.',
+    isbn: '9780316769488',
+    language: 'Russian',
+    pagesCount: 288,
+    genre: 'Культовая проза',
+    storeLinks: [
+      { name: 'Ozon', url: 'https://www.ozon.ru/search/?text=%D0%9D%D0%B0%D0%B4%20%D0%BF%D1%80%D0%BE%D0%BF%D0%B0%D1%81%D1%82%D1%8C%D1%8E%20%D0%B2%D0%BE%20%D1%80%D0%B6%D0%B8' },
+    ],
+    year: 1951,
+    sourceName: 'Seed',
+    sourceUrl: 'https://openlibrary.org/isbn/9780316769488',
   },
 ];
 
 const libraryEntries: SeedLibraryEntry[] = [
   {
     userEmail: 'alexey@housebook.local',
-    canonicalKey: 'isbn:9780140328721',
+    canonicalKey: 'seed:teachings-of-don-juan',
     readingStatus: 'read',
     createdAt: new Date('2026-03-26T10:00:00.000Z'),
   },
   {
     userEmail: 'alexey@housebook.local',
-    canonicalKey: 'isbn:9785171183667',
-    readingStatus: 'reading',
+    canonicalKey: 'seed:1984',
+    readingStatus: 'read',
     createdAt: new Date('2026-03-28T10:00:00.000Z'),
   },
   {
     userEmail: 'alexey@housebook.local',
-    canonicalKey: 'isbn:9785041567225',
-    readingStatus: 'read',
+    canonicalKey: 'seed:fight-club',
+    readingStatus: 'reading',
     createdAt: new Date('2026-03-29T10:00:00.000Z'),
   },
   {
     userEmail: 'alexey@housebook.local',
-    canonicalKey: 'isbn:9785906837643',
+    canonicalKey: 'seed:generation-p',
     readingStatus: 'unread',
     createdAt: new Date('2026-03-31T10:00:00.000Z'),
   },
   {
+    userEmail: 'alexey@housebook.local',
+    canonicalKey: 'seed:roadside-picnic',
+    readingStatus: 'read',
+    createdAt: new Date('2026-04-01T10:00:00.000Z'),
+  },
+  {
+    userEmail: 'alexey@housebook.local',
+    canonicalKey: 'seed:clockwork-orange',
+    readingStatus: 'unread',
+    createdAt: new Date('2026-04-02T10:00:00.000Z'),
+  },
+  {
     userEmail: 'maria@housebook.local',
-    canonicalKey: 'isbn:9785389074351',
+    canonicalKey: 'seed:fahrenheit-451',
     readingStatus: 'read',
     createdAt: new Date('2026-03-27T10:00:00.000Z'),
   },
   {
     userEmail: 'maria@housebook.local',
-    canonicalKey: 'isbn:9785389205502',
+    canonicalKey: 'seed:lullaby',
     readingStatus: 'reading',
     createdAt: new Date('2026-03-30T10:00:00.000Z'),
+  },
+  {
+    userEmail: 'maria@housebook.local',
+    canonicalKey: 'seed:invisible-monsters',
+    readingStatus: 'unread',
+    createdAt: new Date('2026-04-03T10:00:00.000Z'),
+  },
+  {
+    userEmail: 'maria@housebook.local',
+    canonicalKey: 'seed:catcher-in-the-rye',
+    readingStatus: 'read',
+    createdAt: new Date('2026-04-04T10:00:00.000Z'),
   },
 ];
 
@@ -208,7 +336,7 @@ const loanEntries: SeedLoanEntry[] = [
     ownerEmail: 'alexey@housebook.local',
     borrowerEmail: 'maria@housebook.local',
     borrowerName: 'Мария Иванова',
-    canonicalKey: 'isbn:9780140328721',
+    canonicalKey: 'seed:teachings-of-don-juan',
     lentAt: new Date('2026-04-01T10:00:00.000Z'),
     dueAt: new Date('2026-04-20T10:00:00.000Z'),
     status: 'active',
@@ -219,8 +347,8 @@ const loanRequestEntries: SeedLoanRequestEntry[] = [
   {
     ownerEmail: 'alexey@housebook.local',
     requesterEmail: 'maria@housebook.local',
-    canonicalKey: 'isbn:9785171183667',
-    message: 'Можно взять эту книгу на ближайшие две недели?',
+    canonicalKey: 'seed:fight-club',
+    message: 'Можно взять «Бойцовский клуб» на пару недель? Верну без синяков.',
     status: 'pending',
   },
 ];
@@ -270,6 +398,9 @@ async function seedBooks() {
         description: book.description,
         isbn: book.isbn,
         language: book.language,
+        pagesCount: book.pagesCount,
+        genre: book.genre,
+        storeLinks: book.storeLinks ?? [],
         year: book.year,
         sourceName: book.sourceName,
         sourceUrl: book.sourceUrl,
@@ -282,6 +413,9 @@ async function seedBooks() {
         description: book.description,
         isbn: book.isbn,
         language: book.language,
+        pagesCount: book.pagesCount,
+        genre: book.genre,
+        storeLinks: book.storeLinks ?? [],
         year: book.year,
         sourceName: book.sourceName,
         sourceUrl: book.sourceUrl,
@@ -293,6 +427,15 @@ async function seedBooks() {
   }
 
   return bookIds;
+}
+
+async function clearBookData() {
+  await prisma.loanRequest.deleteMany();
+  await prisma.loan.deleteMany();
+  await prisma.userBook.deleteMany();
+  await prisma.book.deleteMany();
+
+  console.log('✓ Old book data cleared');
 }
 
 async function seedLibraries(userIds: Map<string, number>, bookIds: Map<string, number>) {
@@ -420,6 +563,7 @@ async function seedLoanRequests(userIds: Map<string, number>, bookIds: Map<strin
 
 async function main() {
   const userIds = await seedUsers();
+  await clearBookData();
   const bookIds = await seedBooks();
   await seedLibraries(userIds, bookIds);
   await seedLoans(userIds, bookIds);

@@ -153,13 +153,31 @@ export class LoansService {
       return this.mapLoanResult(loan);
     }
 
-    const updated = await this.prisma.loan.update({
-      where: { id: loanId },
-      data: {
-        status: LoanStatus.returned,
-        returnedAt: new Date(),
-      },
-      include: this.loanInclude,
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const returned = await tx.loan.update({
+        where: { id: loanId },
+        data: {
+          status: LoanStatus.returned,
+          returnedAt: new Date(),
+        },
+        include: this.loanInclude,
+      });
+
+      if (
+        loan.loanRequestId &&
+        loan.borrowerLibraryAdded &&
+        loan.borrowerUserId &&
+        loan.borrowerUserId !== loan.ownerUserId
+      ) {
+        await tx.userBook.deleteMany({
+          where: {
+            userId: loan.borrowerUserId,
+            bookId: loan.book.id,
+          },
+        });
+      }
+
+      return returned;
     });
 
     return this.mapLoanResult(updated);

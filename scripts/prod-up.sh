@@ -28,12 +28,23 @@ echo "Waiting for database to be ready..."
 "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up -d postgres
 sleep 5
 
-echo "Applying schema and seeding demo data..."
-"${COMPOSE_CMD[@]}" -f docker-compose.prod.yml run --rm backend sh -lc "npx prisma db push --config prisma.config.ts && npm run prisma:seed"
+echo "Applying schema..."
+"${COMPOSE_CMD[@]}" -f docker-compose.prod.yml run --rm backend sh -lc "npx prisma db push --config prisma.config.ts"
+
+if [ "${RUN_DEMO_SEED:-false}" = "true" ]; then
+  echo "Seeding demo data..."
+  "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml run --rm backend sh -lc "npm run prisma:seed"
+else
+  echo "Skipping demo seed data. Set RUN_DEMO_SEED=true in infra/.env to enable it."
+fi
 
 echo "Starting backend..."
 "${COMPOSE_CMD[@]}" -f docker-compose.prod.yml up -d backend
 
 echo "Production environment is ready!"
 echo "Backend: http://localhost:${BACKEND_PORT:-3000}"
-echo "API Docs: http://localhost:${BACKEND_PORT:-3000}/api-docs"
+if [ "${ENABLE_SWAGGER:-false}" = "true" ]; then
+  echo "API Docs: http://localhost:${BACKEND_PORT:-3000}/api-docs"
+else
+  echo "API Docs are disabled. Set ENABLE_SWAGGER=true in infra/.env to enable them."
+fi

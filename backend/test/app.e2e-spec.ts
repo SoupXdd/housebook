@@ -60,6 +60,18 @@ type LoanRequestBody = {
 
 type LibraryBookBody = {
   bookId: number;
+  title?: string;
+  authors?: string[];
+  isbn?: string;
+  pagesCount?: number;
+  year?: number;
+  genre?: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  readingStatus?: string;
+  storeLinks?: { name: string; url: string }[];
+  hasSourceLink?: boolean;
+  wasAlreadyInLibrary?: boolean;
   isAvailable?: boolean;
   isLent?: boolean;
   activeLoan?: {
@@ -89,6 +101,7 @@ describe('Housebook API (e2e)', () => {
   let createdFreshRegisteredUserId = 0;
   let createdUpcomingBookId = 0;
   let createdNoDueBookId = 0;
+  let createdManualBookId = 0;
 
   const suffix = `e2e-${Date.now()}`;
   const initialEmail = `reader-${suffix}@housebook.local`;
@@ -231,6 +244,7 @@ describe('Housebook API (e2e)', () => {
           { bookId: createdRequestBookId },
           { bookId: createdUpcomingBookId },
           { bookId: createdNoDueBookId },
+          { bookId: createdManualBookId },
         ],
       },
     });
@@ -241,6 +255,7 @@ describe('Housebook API (e2e)', () => {
           { bookId: createdRequestBookId },
           { bookId: createdUpcomingBookId },
           { bookId: createdNoDueBookId },
+          { bookId: createdManualBookId },
         ],
       },
     });
@@ -252,6 +267,7 @@ describe('Housebook API (e2e)', () => {
             createdRequestBookId,
             createdUpcomingBookId,
             createdNoDueBookId,
+            createdManualBookId,
           ],
         },
       },
@@ -454,6 +470,95 @@ describe('Housebook API (e2e)', () => {
           hasSourceLink: true,
           isAvailable: true,
           isLent: false,
+        }),
+      ]),
+    );
+  });
+
+  it('/books/library/manual (POST) creates a form-filled book in current user library', async () => {
+    const createResponse = await request(app.getHttpServer())
+      .post('/books/library/manual')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        title: 'Manual Form Book',
+        author: 'Form Author',
+        isbn: `manual-${suffix}`,
+        description: 'Created from a frontend form without external lookup.',
+        coverUrl: 'https://example.com/manual-cover.jpg',
+        pagesCount: 321,
+        year: 2026,
+        genre: 'Практика',
+        language: 'Russian',
+        readingStatus: 'reading',
+        storeLinks: [
+          {
+            name: 'Local shop',
+            url: 'https://example.com/books/manual-form-book',
+          },
+        ],
+      })
+      .expect(201);
+    const createdBook = getBody<LibraryBookBody>(createResponse);
+    createdManualBookId = createdBook.bookId;
+
+    expect(createdBook).toEqual(
+      expect.objectContaining({
+        title: 'Manual Form Book',
+        authors: ['Form Author'],
+        isbn: `manual-${suffix}`,
+        description: 'Created from a frontend form without external lookup.',
+        coverUrl: 'https://example.com/manual-cover.jpg',
+        pagesCount: 321,
+        year: 2026,
+        genre: 'Практика',
+        language: 'Russian',
+        readingStatus: 'reading',
+        sourceName: 'Manual',
+        sourceUrl: 'https://example.com/books/manual-form-book',
+        hasSourceLink: true,
+        displayAuthor: 'Form Author',
+        displayStatus: 'Читаю',
+        isAvailable: true,
+        isLent: false,
+        wasAlreadyInLibrary: false,
+      }),
+    );
+    expect(createdBook.storeLinks).toEqual([
+      {
+        name: 'Local shop',
+        url: 'https://example.com/books/manual-form-book',
+      },
+    ]);
+
+    const duplicateResponse = await request(app.getHttpServer())
+      .post('/books/library/manual')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        title: 'Manual Form Book',
+        author: 'Form Author',
+        isbn: `manual-${suffix}`,
+        readingStatus: 'read',
+      })
+      .expect(201);
+    const duplicateBook = getBody<LibraryBookBody>(duplicateResponse);
+
+    expect(duplicateBook.bookId).toBe(createdManualBookId);
+    expect(duplicateBook.wasAlreadyInLibrary).toBe(true);
+    expect(duplicateBook.readingStatus).toBe('read');
+
+    const libraryResponse = await request(app.getHttpServer())
+      .get('/books/library')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+    const libraryBooks = getBodyArray<LibraryBookBody>(libraryResponse);
+
+    expect(libraryBooks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bookId: createdManualBookId,
+          title: 'Manual Form Book',
+          readingStatus: 'read',
+          sourceName: 'Manual',
         }),
       ]),
     );
@@ -685,6 +790,22 @@ describe('Housebook API (e2e)', () => {
       approvedRequest.approvedLoanId,
     );
 
+    const borrowerLibraryAfterApproveResponse = await request(app.getHttpServer())
+      .get('/books/library')
+      .set('Authorization', `Bearer ${requesterLoginBody.accessToken}`)
+      .expect(200);
+    const borrowerLibraryAfterApprove = getBodyArray<LibraryBookBody>(
+      borrowerLibraryAfterApproveResponse,
+    );
+
+    expect(borrowerLibraryAfterApprove).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bookId: createdRequestBookId,
+        }),
+      ]),
+    );
+
     const borrowerIncomingLoansResponse = await request(app.getHttpServer())
       .get('/loans/incoming')
       .set('Authorization', `Bearer ${requesterLoginBody.accessToken}`)
@@ -698,5 +819,30 @@ describe('Housebook API (e2e)', () => {
     );
     expect(approvedBorrowerLoan).toBeDefined();
     expect(approvedBorrowerLoan?.status).toBe('active');
+
+    await request(app.getHttpServer())
+      .patch(`/loans/${approvedRequest.approvedLoanId}/return`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200)
+      .expect((response) => {
+        const body = getBody<LoanBody>(response);
+        expect(body.status).toBe('returned');
+      });
+
+    const borrowerLibraryAfterReturnResponse = await request(app.getHttpServer())
+      .get('/books/library')
+      .set('Authorization', `Bearer ${requesterLoginBody.accessToken}`)
+      .expect(200);
+    const borrowerLibraryAfterReturn = getBodyArray<LibraryBookBody>(
+      borrowerLibraryAfterReturnResponse,
+    );
+
+    expect(borrowerLibraryAfterReturn).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bookId: createdRequestBookId,
+        }),
+      ]),
+    );
   });
 });
